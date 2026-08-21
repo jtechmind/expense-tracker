@@ -1,20 +1,24 @@
 package com.jtech.expense_tracker.dto;
 
 import com.jtech.expense_tracker.entity.ExpenseCategory;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class ExpenseRequest {
-
+    @NotBlank(message = "Title is required")
     private String title;
-
+    @NotBlank(message = "Description is required")
     private String description;
-
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be greater than 0")
     private BigDecimal amount;
-
+    @NotNull(message = "Category is required")
     private ExpenseCategory category;
-
+    @NotNull(message = "Expense date is required")
     private LocalDate expenseDate;
 
     public ExpenseRequest() {

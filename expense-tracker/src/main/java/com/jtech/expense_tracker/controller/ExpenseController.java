@@ -2,8 +2,8 @@ package com.jtech.expense_tracker.controller;
 
 import com.jtech.expense_tracker.dto.ExpenseRequest;
 import com.jtech.expense_tracker.dto.ExpenseResponse;
-import com.jtech.expense_tracker.entity.Expense;
 import com.jtech.expense_tracker.service.ExpenseService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public class ExpenseController {
     }
 
     @PostMapping
-    public ExpenseResponse createExpense(@RequestBody ExpenseRequest request) {
+    public ExpenseResponse createExpense(@Valid @RequestBody ExpenseRequest request) {
 
         return service.createExpense(request);
     }
@@ -36,7 +36,7 @@ public class ExpenseController {
     }
 
     @PutMapping("/{id}")
-    public ExpenseResponse updateExpense(@PathVariable Long id, @RequestBody ExpenseRequest request) {
+    public ExpenseResponse updateExpense(@PathVariable Long id, @Valid @RequestBody ExpenseRequest request) {
 
         return service.updateExpense(id, request);
     }
