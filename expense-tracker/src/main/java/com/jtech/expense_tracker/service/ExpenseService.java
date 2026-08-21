@@ -5,6 +5,10 @@ import com.jtech.expense_tracker.dto.ExpenseResponse;
 import com.jtech.expense_tracker.entity.Expense;
 import com.jtech.expense_tracker.exception.ExpenseNotFoundException;
 import com.jtech.expense_tracker.repository.ExpenseRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,11 +23,20 @@ public class ExpenseService {
         this.repository = repository;
     }
 
-    public List<ExpenseResponse> getAllExpenses() {
-        return repository.findAll()
-                .stream()
-                .map(this::convertToResponse)
-                .toList();
+    public Page<ExpenseResponse> getAllExpenses(
+            int page,
+            int size,
+            String sortBy,
+            String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return repository.findAll(pageable)
+                .map(this::convertToResponse);
     }
 
     public ExpenseResponse createExpense(ExpenseRequest request) {
