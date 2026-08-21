@@ -3,16 +3,19 @@ package com.jtech.expense_tracker.service;
 import com.jtech.expense_tracker.dto.ExpenseRequest;
 import com.jtech.expense_tracker.dto.ExpenseResponse;
 import com.jtech.expense_tracker.entity.Expense;
+import com.jtech.expense_tracker.entity.ExpenseCategory;
 import com.jtech.expense_tracker.exception.ExpenseNotFoundException;
 import com.jtech.expense_tracker.repository.ExpenseRepository;
+import com.jtech.expense_tracker.specification.ExpenseSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class ExpenseService {
@@ -104,5 +107,107 @@ public class ExpenseService {
 
         repository.deleteById(id);
     }
+
+public Page<ExpenseResponse> getExpensesByCategory(
+        ExpenseCategory category,
+        int page,
+        int size,
+        String sortBy,
+        String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort
+        );
+
+        return repository.findByCategory(category,pageable)
+                .map(this::convertToResponse);
+}
+
+public Page<ExpenseResponse> getExpensesByAmountRange(
+        BigDecimal minimumAmount,
+        BigDecimal maximumAmount,
+        int page,
+        int size,
+        String sortBy,
+        String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort
+        );
+
+        return repository
+                .findByAmountBetween(minimumAmount, maximumAmount, pageable)
+                .map(this::convertToResponse);
+}
+
+public Page<ExpenseResponse> searchExpenses(
+        ExpenseCategory category,
+        BigDecimal minAmount,
+        BigDecimal maxAmount,
+        String title,
+        int page,
+        int size,
+        String sortBy,
+        String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort
+        );
+
+    Specification<Expense> specification =
+            (root, query, criteriaBuilder) ->
+                    criteriaBuilder.conjunction();
+
+    if(category != null) {
+
+        specification = specification.and(
+                ExpenseSpecification.hasCategory(category)
+        );
+    }
+
+    if(minAmount != null) {
+
+        specification = specification.and(
+                ExpenseSpecification.amountGreaterThanOrEqualTo(minAmount)
+        );
+    }
+
+    if(maxAmount != null) {
+
+        specification = specification.and(
+                ExpenseSpecification.amountLessThanOrEqualTo(maxAmount)
+        );
+    }
+
+    if(title != null && !title.isBlank()) {
+
+        specification = specification.and(
+                ExpenseSpecification.titleContains(title)
+        );
+    }
+
+    return repository
+            .findAll(specification, pageable)
+            .map(this::convertToResponse);
+
+}
 
 }
