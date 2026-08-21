@@ -3,6 +3,7 @@ package com.jtech.expense_tracker.service;
 import com.jtech.expense_tracker.dto.ExpenseRequest;
 import com.jtech.expense_tracker.dto.ExpenseResponse;
 import com.jtech.expense_tracker.entity.Expense;
+import com.jtech.expense_tracker.exception.ExpenseNotFoundException;
 import com.jtech.expense_tracker.repository.ExpenseRepository;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +60,7 @@ public class ExpenseService {
 
     public ExpenseResponse getExpenseById(Long id) {
         Expense expense =  repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Expense not found with id:" +id));
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with id:" +id));
 
         return convertToResponse(expense);
     }
@@ -67,7 +68,7 @@ public class ExpenseService {
     public ExpenseResponse updateExpense(Long id, ExpenseRequest request) {
 
         Expense existingExpense = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Expense not found with id: " +id));
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found with id: " +id));
 
         existingExpense.setTitle(request.getTitle());
         existingExpense.setDescription(request.getDescription());
@@ -85,7 +86,7 @@ public class ExpenseService {
     public void deleteExpense(Long id) {
 
         if(!repository.existsById(id)) {
-            throw new RuntimeException("Expense not found with id: " + id);
+            throw new ExpenseNotFoundException("Expense not found with id: " + id);
         }
 
         repository.deleteById(id);
