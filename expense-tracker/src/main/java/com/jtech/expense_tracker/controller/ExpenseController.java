@@ -6,6 +6,9 @@ import com.jtech.expense_tracker.entity.ExpenseCategory;
 import com.jtech.expense_tracker.service.ExpenseService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -32,27 +35,45 @@ public class ExpenseController {
 //    }
 
     @PostMapping
-    public ExpenseResponse createExpense(@Valid @RequestBody ExpenseRequest request) {
+    public ResponseEntity<ExpenseResponse> createExpense(
+            @Valid @RequestBody ExpenseRequest request) {
 
-        return service.createExpense(request);
+        ExpenseResponse response =
+                service.createExpense(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @GetMapping("/{id}")
-    public ExpenseResponse getExpenseById(@PathVariable Long id) {
+    public ResponseEntity<ExpenseResponse> getExpenseById(
+            @PathVariable Long id) {
 
-        return service.getExpenseById(id);
+        ExpenseResponse response =
+                service.getExpenseById(id);
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
-    public ExpenseResponse updateExpense(@PathVariable Long id, @Valid @RequestBody ExpenseRequest request) {
+    public ResponseEntity<ExpenseResponse> updateExpense(
+            @PathVariable Long id,
+            @Valid @RequestBody ExpenseRequest request) {
 
-        return service.updateExpense(id, request);
+        ExpenseResponse response =
+                service.updateExpense(id, request);
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteExpense(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteExpense(
+            @PathVariable Long id) {
 
         service.deleteExpense(id);
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/category/{category}")
@@ -93,7 +114,7 @@ public class ExpenseController {
     }
 
     @GetMapping
-    public Page<ExpenseResponse> searchExpenses(
+    public ResponseEntity<Page<ExpenseResponse>> searchExpenses(
 
             @RequestParam(required = false)
             ExpenseCategory category,
@@ -119,7 +140,8 @@ public class ExpenseController {
             @RequestParam(defaultValue = "asc")
             String direction) {
 
-        return service.searchExpenses(
+        Page<ExpenseResponse> response =
+                service.searchExpenses(
                 category,
                 minAmount,
                 maxAmount,
@@ -129,6 +151,8 @@ public class ExpenseController {
                 sortBy,
                 direction
         );
+
+        return ResponseEntity.ok(response);
 
     }
 }
